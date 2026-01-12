@@ -1,12 +1,18 @@
 {
-  "private": true,
-  "workspaces": [
-    "firestore-mcp",
-    "langfuse-mcp",
-    "gcp-logging-mcp",
-    "atlassian-mcp"
-  ],
+  "name": "memory-prototype-mcp",
+  "version": "0.1.0",
+  "description": "SIMPLEST possible brain-analogous memory prototype",
+  "type": "module",
   "scripts": {
-    "build": "npm --workspace firestore-mcp run build && npm --workspace langfuse-mcp run build && npm --workspace gcp-logging-mcp run build && npm --workspace atlassian-mcp run build"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch",
+    "start": "node src/cognitive-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0"
   }
 }
