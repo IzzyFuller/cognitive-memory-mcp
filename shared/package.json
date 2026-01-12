@@ -1,0 +1,21 @@
+{
+  "name": "@mcp-servers/shared",
+  "version": "1.0.0",
+  "description": "Shared validation utilities for MCP servers",
+  "type": "module",
+  "main": "./validation-utils.js",
+  "types": "./validation-utils.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.24.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.24.0",
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
+  }
+}

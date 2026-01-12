@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "workspaces": [
+    "firestore-mcp",
+    "langfuse-mcp",
+    "gcp-logging-mcp",
+    "atlassian-mcp"
+  ],
+  "scripts": {
+    "build": "npm --workspace firestore-mcp run build && npm --workspace langfuse-mcp run build && npm --workspace gcp-logging-mcp run build && npm --workspace atlassian-mcp run build"
+  }
+}

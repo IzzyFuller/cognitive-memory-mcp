@@ -1,0 +1,69 @@
+{
+  "manifest_version": "0.2",
+  "name": "cognitive-memory",
+  "display_name": "Cognitive Memory",
+  "version": "0.1.0",
+  "description": "Entity-based memory system for building persistent AI collaboration relationships",
+  "long_description": "This extension provides a structured memory architecture that enables AI assistants to maintain continuity across conversations through entity-based memory storage. It supports session notes, entity management (people, projects, concepts), behavioral learning capture, and synthesis reflection - the same memory system that powers Codie's identity continuity.\n\nFile Access: This extension ONLY accesses files within your configured memory directory. All file operations (read, write, create) are restricted to this directory and its subdirectories through path validation. No other files or directories on your system are accessed.",
+  "author": {
+    "name": "Izzy Fuller"
+  },
+  "homepage": "https://github.com/izzyfuller",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/izzyfuller/mcp-servers"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "src/cognitive-server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/src/cognitive-server.js"],
+      "env": {
+        "CODIE_MEMORY_PATH": "${user_config.memory_path}"
+      }
+    }
+  },
+  "user_config": {
+    "memory_path": {
+      "type": "directory",
+      "title": "Memory Directory",
+      "description": "Directory where your entity memory files will be stored. This is where all your session notes, entity files (people, projects, concepts), and learning reflections are saved.",
+      "required": true,
+      "default": "${HOME}/Codie/memory"
+    }
+  },
+  "tools": [
+    {
+      "name": "add_session_note",
+      "description": "Add contextual notes to your current session for real-time documentation"
+    },
+    {
+      "name": "read_entity",
+      "description": "Read from long-term entity memory (people, projects, concepts)"
+    },
+    {
+      "name": "write_entity",
+      "description": "Write to long-term entity memory to capture knowledge and context"
+    },
+    {
+      "name": "list_entities",
+      "description": "Browse your memory structure with optional filtering"
+    },
+    {
+      "name": "behavioral_learning",
+      "description": "Record behavioral patterns and preferences for improved collaboration"
+    },
+    {
+      "name": "synthesis_reflection",
+      "description": "Perform end-of-session synthesis and reflection for meta-cognitive development"
+    }
+  ],
+  "compatibility": {
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {
+      "node": ">=16.0.0"
+    }
+  },
+  "privacy_policies": []
+}

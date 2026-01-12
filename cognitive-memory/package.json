@@ -1,0 +1,18 @@
+{
+  "name": "memory-prototype-mcp",
+  "version": "0.1.0",
+  "description": "SIMPLEST possible brain-analogous memory prototype",
+  "type": "module",
+  "scripts": {
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch",
+    "start": "node src/cognitive-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0"
+  }
+}
