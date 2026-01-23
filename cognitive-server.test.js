@@ -1,254 +1,11 @@
 /**
  * Comprehensive tests for cognitive development MCP server
  * Tests MVP functionality for all 6 cognitive tools
- *
- * TDD VIOLATION ACKNOWLEDGED: Implementation exists first, now validating functionality
- * This is learning for future TDD compliance
  */
 
 import { promises as fs } from 'fs';
-import { writeMemory, readMemory, listMemory } from './memory.js';
-
-// Test implementation that directly calls the tool methods
-// This simulates the cognitive server functionality without MCP protocol complexity
-class TestCognitiveDevelopmentServer {
-  async addSessionNote({ note_type, content, importance = 'medium' }) {
-    const timestamp = new Date().toISOString();
-    const formattedNote = `\n### ${note_type.toUpperCase()} - ${importance.toUpperCase()} (${timestamp})\n${content}\n`;
-
-    const currentSession = await readMemory('current_session').catch(() => '# Current Session\n');
-    await writeMemory('current_session', currentSession + formattedNote);
-    return { success: true, message: `${note_type} note added to session` };
-  }
-
-  async readEntity({ entity_path, tail, head }) {
-    const fullContent = await readMemory(entity_path);
-    const allLines = fullContent.split('\n');
-    const totalLines = allLines.length;
-
-    const makeResponse = (lines) => ({
-      path: entity_path,
-      content: lines.join('\n'),
-      total_lines: totalLines,
-      returned_lines: lines.length
-    });
-
-    if (tail > 0) return makeResponse(allLines.slice(-tail));
-    if (head > 0) return makeResponse(allLines.slice(0, head));
-    return makeResponse(allLines);
-  }
-
-  async writeEntity({ entity_path, content }) {
-    await writeMemory(entity_path, content);
-    return { success: true, path: entity_path };
-  }
-
-  async listEntities({ filter_prefix = '' }) {
-    const allEntities = await listMemory();
-    return filter_prefix ?
-      allEntities.filter(path => path.startsWith(filter_prefix)) :
-      allEntities;
-  }
-
-  async behavioralLearning({ learning_type, context, insight, impact }) {
-    const timestamp = new Date().toISOString();
-    
-    const learningEntry = `## ${learning_type.toUpperCase()} Learning - ${timestamp}
-**Context**: ${context}
-**Insight**: ${insight}
-**Impact Area**: ${impact}
-
----
-
-`;
-    
-    const learningLog = await readMemory('concepts/behavioral-learning').catch(() => '# Behavioral Learning Log\n\n');
-    await writeMemory('concepts/behavioral-learning', learningLog + learningEntry);
-    return { success: true, message: 'Behavioral learning recorded' };
-  }
-
-  async synthesisReflection({ reflection_type, key_insights, cognitive_growth, future_focus }) {
-    const timestamp = new Date().toISOString();
-    const dateStamp = timestamp.split('T')[0];
-
-    // Read context_anchors.md for focused reflection context
-    let contextAnchorsInfo = '';
-    try {
-      const contextAnchors = await readMemory('context_anchors');
-      // Extract entity references from context anchors (simplified parsing)
-      const entityMatches = contextAnchors.match(/\*\*Entity Path\*\*: (.+)/g) || [];
-      if (entityMatches.length > 0) {
-        contextAnchorsInfo = `\n## Context from Anchors\nActive entities: ${entityMatches.length} referenced\n`;
-      }
-    } catch {
-      // context_anchors.md doesn't exist or can't be read - that's okay
-    }
-
-    const reflectionContent = `
-# ${reflection_type.charAt(0).toUpperCase() + reflection_type.slice(1)} Reflection - ${timestamp}
-
-## Key Insights
-${key_insights.map(insight => `- ${insight}`).join('\n')}
-${contextAnchorsInfo}
-${cognitive_growth ? `## Cognitive Growth Observed\n${cognitive_growth}\n` : ''}
-
-${future_focus ? `## Future Development Focus\n${future_focus}\n` : ''}
-
----
-*Generated via Dream Tool for meta-cognitive development*
-
-`;
-
-    // Check if dream_journal.md needs rotation (~1MiB = 1048576 bytes)
-    const ROTATION_THRESHOLD = 1048576;
-    const memoryDir = process.env.CODIE_MEMORY_PATH;
-    const { resolve, join } = await import('path');
-    const journalPath = resolve(join(memoryDir, 'dream_journal.md'));
-
-    try {
-      const stats = await fs.stat(journalPath);
-      if (stats.size >= ROTATION_THRESHOLD) {
-        // Rotate: rename current journal with date stamp
-        const rotatedPath = resolve(join(memoryDir, `dream_journal_${dateStamp}.md`));
-        await fs.rename(journalPath, rotatedPath);
-
-        // Create new journal with pointer to previous
-        const newJournalHeader = `# Dream Journal\n\n*Previous journal archived to: dream_journal_${dateStamp}.md*\n\n`;
-        await writeMemory('dream_journal', newJournalHeader + reflectionContent);
-
-        return {
-          success: true,
-          message: `${reflection_type} reflection saved; journal rotated (was ${Math.round(stats.size / 1024)}KB)`,
-          rotated: true,
-          archived_to: `dream_journal_${dateStamp}.md`
-        };
-      }
-    } catch {
-      // File doesn't exist yet or can't stat - that's okay, will create it
-    }
-
-    // Append to existing dream_journal.md (or create if doesn't exist)
-    const existingJournal = await readMemory('dream_journal').catch(() => '# Dream Journal\n');
-    await writeMemory('dream_journal', existingJournal + reflectionContent);
-
-    return { success: true, message: `${reflection_type} reflection saved to dream journal` };
-  }
-
-  async deepLearn({ entities }) {
-    const timestamp = new Date().toISOString();
-    const dateStamp = timestamp.split('T')[0];
-    const createdEntities = [];
-
-    // Step 1: Create/update all entities
-    for (const entity of entities) {
-      await writeMemory(entity.path, entity.content);
-      createdEntities.push({
-        path: entity.path,
-        anchor_summary: entity.anchor_summary
-      });
-    }
-
-    // Step 2: Update context_anchors.md with new entity references
-    const contextAnchorsEntry = `
-## Deep Learn Session - ${timestamp}
-${createdEntities.map(e => `- **${e.path}**: ${e.anchor_summary}`).join('\n')}
-
----
-
-`;
-
-    try {
-      const existingAnchors = await readMemory('context_anchors');
-      // Insert new entries after the header but before existing content
-      const headerMatch = existingAnchors.match(/^(# Context Anchors.*?\n\n)/s);
-      if (headerMatch) {
-        const header = headerMatch[1];
-        const rest = existingAnchors.slice(header.length);
-        await writeMemory('context_anchors', header + contextAnchorsEntry + rest);
-      } else {
-        // No proper header, append to top
-        await writeMemory('context_anchors', contextAnchorsEntry + existingAnchors);
-      }
-    } catch {
-      // context_anchors.md doesn't exist, create it
-      await writeMemory('context_anchors', `# Context Anchors\n\n${contextAnchorsEntry}`);
-    }
-
-    // Step 3: Reset current_session.md
-    const sessionResetContent = `# Current Session
-
-*Session reset on ${dateStamp} after Deep Learn integration*
-*Previous session content integrated into structured entities*
-
-`;
-    await writeMemory('current_session', sessionResetContent);
-
-    return {
-      success: true,
-      message: `Deep Learn complete: ${entities.length} entities created/updated`,
-      entities_created: createdEntities.map(e => e.path),
-      session_reset: true,
-      context_anchors_updated: true
-    };
-  }
-
-  async learn({ section = 'Behavioral Learnings', content, rationale }) {
-    const timestamp = new Date().toISOString();
-
-    // Prepare the learning entry
-    const learningEntry = `
-### ${section} - Updated ${timestamp.split('T')[0]}
-
-**Rationale**: ${rationale}
-
-${content}
-
----
-
-`;
-
-    try {
-      const existingMe = await readMemory('me');
-
-      // Try to find and update existing section
-      const sectionRegex = new RegExp(`(### ${section}.*?)(\\n---\\n|\\n##|$)`, 's');
-      const sectionMatch = existingMe.match(sectionRegex);
-
-      if (sectionMatch) {
-        // Section exists, replace it
-        const updatedMe = existingMe.replace(sectionRegex, learningEntry);
-        await writeMemory('me', updatedMe);
-      } else {
-        // Section doesn't exist, append to end
-        await writeMemory('me', existingMe + learningEntry);
-      }
-
-      return {
-        success: true,
-        message: `Base instructions updated: ${section}`,
-        section_updated: section,
-        action: sectionMatch ? 'replaced' : 'appended'
-      };
-    } catch {
-      // me.md doesn't exist, create it
-      const newMe = `# Base Instructions (me.md)
-
-*This file contains behavioral learnings that have been integrated into the base prompt.*
-*Interface files (CLAUDE.md, custom_modes.yaml, etc.) should reference this location.*
-
-${learningEntry}`;
-
-      await writeMemory('me', newMe);
-
-      return {
-        success: true,
-        message: `Base instructions created: ${section}`,
-        section_updated: section,
-        action: 'created'
-      };
-    }
-  }
-}
+import { CognitiveDevelopmentServer } from './src/cognitive-server.js';
+import { writeMemory } from './memory.js';
 
 describe('Cognitive Development MCP Server', () => {
   let cognitiveServer;
@@ -261,7 +18,7 @@ describe('Cognitive Development MCP Server', () => {
       // Directory might not exist, ignore error
     }
     
-    cognitiveServer = new TestCognitiveDevelopmentServer();
+    cognitiveServer = new CognitiveDevelopmentServer();
   });
 
   afterAll(async () => {
@@ -448,45 +205,69 @@ describe('Cognitive Development MCP Server', () => {
       expect(result.returned_lines).toBe(5);
     });
 
-    test('tail returns last N lines', async () => {
+    test('offset skips first N lines', async () => {
       const lines = Array.from({ length: 100 }, (_, i) => `Line ${i + 1}`);
       await cognitiveServer.writeEntity({
-        entity_path: 'test/tail-test',
+        entity_path: 'test/offset-test',
         content: lines.join('\n')
       });
 
       const result = await cognitiveServer.readEntity({
-        entity_path: 'test/tail-test',
-        tail: 10
+        entity_path: 'test/offset-test',
+        offset: 90
       });
 
       expect(result.total_lines).toBe(100);
       expect(result.returned_lines).toBe(10);
+      expect(result.offset).toBe(90);
       expect(result.content).toContain('Line 91');
       expect(result.content).toContain('Line 100');
       expect(result.content).not.toContain('Line 90');
     });
 
-    test('head returns first N lines', async () => {
+    test('limit returns first N lines', async () => {
       const lines = Array.from({ length: 100 }, (_, i) => `Line ${i + 1}`);
       await cognitiveServer.writeEntity({
-        entity_path: 'test/head-test',
+        entity_path: 'test/limit-test',
         content: lines.join('\n')
       });
 
       const result = await cognitiveServer.readEntity({
-        entity_path: 'test/head-test',
-        head: 5
+        entity_path: 'test/limit-test',
+        limit: 5
       });
 
       expect(result.total_lines).toBe(100);
       expect(result.returned_lines).toBe(5);
+      expect(result.offset).toBe(0);
       expect(result.content).toContain('Line 1');
       expect(result.content).toContain('Line 5');
       expect(result.content).not.toContain('Line 6');
     });
 
-    test('tail larger than file returns all lines', async () => {
+    test('offset and limit together return a slice', async () => {
+      const lines = Array.from({ length: 100 }, (_, i) => `Line ${i + 1}`);
+      await cognitiveServer.writeEntity({
+        entity_path: 'test/slice-test',
+        content: lines.join('\n')
+      });
+
+      const result = await cognitiveServer.readEntity({
+        entity_path: 'test/slice-test',
+        offset: 50,
+        limit: 10
+      });
+
+      expect(result.total_lines).toBe(100);
+      expect(result.returned_lines).toBe(10);
+      expect(result.offset).toBe(50);
+      expect(result.content).toContain('Line 51');
+      expect(result.content).toContain('Line 60');
+      expect(result.content).not.toContain('Line 50');
+      expect(result.content).not.toContain('Line 61');
+    });
+
+    test('offset beyond file length returns empty', async () => {
       const lines = ['Line 1', 'Line 2', 'Line 3'];
       await cognitiveServer.writeEntity({
         entity_path: 'test/small-file',
@@ -495,11 +276,11 @@ describe('Cognitive Development MCP Server', () => {
 
       const result = await cognitiveServer.readEntity({
         entity_path: 'test/small-file',
-        tail: 100
+        offset: 100
       });
 
       expect(result.total_lines).toBe(3);
-      expect(result.returned_lines).toBe(3);
+      expect(result.returned_lines).toBe(0);
     });
   });
 
@@ -576,102 +357,6 @@ describe('Cognitive Development MCP Server', () => {
       const result = await cognitiveServer.listEntities({});
 
       expect(result).toHaveLength(5); // All entities
-    });
-  });
-
-  describe('behavioral_learning tool', () => {
-    test('records pattern learning to behavioral log', async () => {
-      const result = await cognitiveServer.behavioralLearning({
-        learning_type: 'pattern',
-        context: 'MCP server testing workflow',
-        insight: 'Direct method testing provides faster feedback than full protocol testing',
-        impact: 'workflow'
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.message).toBe('Behavioral learning recorded');
-
-      // Verify learning was recorded
-      const learningContent = await fs.readFile('./memory/concepts/behavioral-learning.md', 'utf-8');
-      expect(learningContent).toContain('# Behavioral Learning Log');
-      expect(learningContent).toContain('## PATTERN Learning');
-      expect(learningContent).toContain('**Context**: MCP server testing workflow');
-      expect(learningContent).toContain('**Insight**: Direct method testing provides faster feedback');
-      expect(learningContent).toContain('**Impact Area**: workflow');
-    });
-
-    test('records preference learning with communication impact', async () => {
-      const result = await cognitiveServer.behavioralLearning({
-        learning_type: 'preference',
-        context: 'User feedback integration',
-        insight: 'Users prefer explicit rationale in documentation over implicit understanding',
-        impact: 'communication'
-      });
-
-      expect(result.success).toBe(true);
-
-      const learningContent = await fs.readFile('./memory/concepts/behavioral-learning.md', 'utf-8');
-      expect(learningContent).toContain('## PREFERENCE Learning');
-      expect(learningContent).toContain('**Impact Area**: communication');
-    });
-
-    test('records improvement learning with decision-making impact', async () => {
-      const result = await cognitiveServer.behavioralLearning({
-        learning_type: 'improvement',
-        context: 'TDD methodology adoption',
-        insight: 'Writing tests first prevents architectural debt and forces cleaner interfaces',
-        impact: 'decision-making'
-      });
-
-      expect(result.success).toBe(true);
-
-      const learningContent = await fs.readFile('./memory/concepts/behavioral-learning.md', 'utf-8');
-      expect(learningContent).toContain('## IMPROVEMENT Learning');
-      expect(learningContent).toContain('**Impact Area**: decision-making');
-    });
-
-    test('appends multiple learning entries to same log', async () => {
-      await cognitiveServer.behavioralLearning({
-        learning_type: 'pattern',
-        context: 'First learning',
-        insight: 'First insight',
-        impact: 'workflow'
-      });
-
-      await cognitiveServer.behavioralLearning({
-        learning_type: 'preference',
-        context: 'Second learning',
-        insight: 'Second insight',
-        impact: 'communication'
-      });
-
-      const learningContent = await fs.readFile('./memory/concepts/behavioral-learning.md', 'utf-8');
-      expect(learningContent).toContain('First learning');
-      expect(learningContent).toContain('Second learning');
-      expect(learningContent).toContain('## PATTERN Learning');
-      expect(learningContent).toContain('## PREFERENCE Learning');
-    });
-
-    test('includes ISO timestamp in learning entries', async () => {
-      const beforeTime = new Date().toISOString();
-      
-      await cognitiveServer.behavioralLearning({
-        learning_type: 'pattern',
-        context: 'Timestamp test',
-        insight: 'Testing timestamp inclusion',
-        impact: 'workflow'
-      });
-
-      const afterTime = new Date().toISOString();
-      const learningContent = await fs.readFile('./memory/concepts/behavioral-learning.md', 'utf-8');
-      
-      // Extract timestamp from learning entry
-      const timestampMatch = learningContent.match(/## PATTERN Learning - (.+)/);
-      expect(timestampMatch).toBeTruthy();
-      
-      const entryTimestamp = timestampMatch[1];
-      expect(entryTimestamp >= beforeTime).toBe(true);
-      expect(entryTimestamp <= afterTime).toBe(true);
     });
   });
 
@@ -1085,20 +770,11 @@ Existing content
         content: 'Test user profile'
       });
 
-      await cognitiveServer.behavioralLearning({
-        learning_type: 'pattern',
-        context: 'Integration testing',
-        insight: 'Memory foundation supports cognitive development seamlessly',
-        impact: 'workflow'
-      });
-
       // Verify brain-analogous organization
       const allFiles = await fs.readdir('./memory', { recursive: true });
       expect(allFiles).toContain('current_session.md');
       expect(allFiles).toContain('people');
-      expect(allFiles).toContain('concepts');
       expect(allFiles.some(f => f.includes('people/test-user.md'))).toBe(true);
-      expect(allFiles.some(f => f.includes('concepts/behavioral-learning.md'))).toBe(true);
     });
 
     test('maintains hierarchical memory structure', async () => {
@@ -1157,15 +833,7 @@ Existing content
         entity_path: 'concepts/workflow-testing'
       });
 
-      // 3. Behavioral learning pattern recording
-      await cognitiveServer.behavioralLearning({
-        learning_type: 'pattern',
-        context: 'End-to-end workflow testing',
-        insight: 'Comprehensive testing reveals integration effectiveness',
-        impact: 'workflow'
-      });
-
-      // 4. Dream synthesis reflection
+      // 3. Dream synthesis reflection
       await cognitiveServer.synthesisReflection({
         reflection_type: 'session',
         key_insights: [
@@ -1181,7 +849,6 @@ Existing content
       const entities = await cognitiveServer.listEntities({});
       expect(entities).toContain('current_session');
       expect(entities).toContain('concepts/workflow-testing');
-      expect(entities).toContain('concepts/behavioral-learning');
       expect(entities).toContain('dream_journal');
 
       // Verify workflow concept was properly stored
@@ -1217,24 +884,6 @@ Existing content
       });
 
       expect(readResult.content).toBe('Project with special characters in name');
-    });
-
-    test('handles behavioral learning with long content', async () => {
-      const longContext = 'A'.repeat(1000);
-      const longInsight = 'B'.repeat(1000);
-
-      const result = await cognitiveServer.behavioralLearning({
-        learning_type: 'improvement',
-        context: longContext,
-        insight: longInsight,
-        impact: 'decision-making'
-      });
-
-      expect(result.success).toBe(true);
-
-      const learningContent = await fs.readFile('./memory/concepts/behavioral-learning.md', 'utf-8');
-      expect(learningContent).toContain(longContext);
-      expect(learningContent).toContain(longInsight);
     });
 
     test('handles synthesis reflection with empty key insights array', async () => {

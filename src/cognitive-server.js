@@ -36,13 +36,13 @@ class CognitiveDevelopmentServer {
         },
         {
           name: 'read_entity',
-          description: 'Read entity from long-term memory. Supports pagination via tail/head params for large files.',
+          description: 'Read entity from long-term memory. Supports pagination via offset/limit for large files.',
           inputSchema: {
             type: 'object',
             properties: {
               entity_path: { type: 'string', description: 'Full path to entity (e.g., \'people/john-doe\', \'projects/mcp-servers\')' },
-              tail: { type: 'integer', description: 'Return last N lines (useful for recent session notes)' },
-              head: { type: 'integer', description: 'Return first N lines (mutually exclusive with tail)' }
+              offset: { type: 'integer', description: 'Number of lines to skip from the beginning (default: 0)' },
+              limit: { type: 'integer', description: 'Maximum number of lines to return after offset (default: all remaining)' }
             },
             required: ['entity_path']
           }
@@ -165,21 +165,23 @@ class CognitiveDevelopmentServer {
     return { success: true, message: `${note_type} note added to session` };
   }
   
-  async readEntity({ entity_path, tail, head }) {
+  async readEntity({ entity_path, offset = 0, limit }) {
     const fullContent = await readMemory(entity_path);
     const allLines = fullContent.split('\n');
     const totalLines = allLines.length;
 
-    const makeResponse = (lines) => ({
-      path: entity_path,
-      content: lines.join('\n'),
-      total_lines: totalLines,
-      returned_lines: lines.length
-    });
+    let resultLines = allLines.slice(offset);
+    if (limit > 0) {
+      resultLines = resultLines.slice(0, limit);
+    }
 
-    if (tail > 0) return makeResponse(allLines.slice(-tail));
-    if (head > 0) return makeResponse(allLines.slice(0, head));
-    return makeResponse(allLines);
+    return {
+      path: entity_path,
+      content: resultLines.join('\n'),
+      total_lines: totalLines,
+      returned_lines: resultLines.length,
+      offset: offset
+    };
   }
   
   async writeEntity({ entity_path, content }) {
@@ -400,4 +402,8 @@ ${learningEntry}`;
   }
 }
 
+// Export for testing
+export { CognitiveDevelopmentServer };
+
+// Run the server
 new CognitiveDevelopmentServer().run().catch(console.error);

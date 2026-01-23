@@ -1,18 +1,25 @@
 # Cognitive Memory MCP Server
 
-Entity-based memory architecture for AI assistants with session notes, entity management, and learning tools.
+Entity-based memory architecture for AI assistants, implemented as an MCP (Model Context Protocol) server.
 
 ## Overview
 
-This MCP (Model Context Protocol) server provides a structured memory system that enables AI assistants to maintain continuity across conversations. It implements an entity-based architecture for storing and retrieving contextual information, similar to the memory system that powers Codie's identity continuity.
+This MCP server provides structured memory operations for AI assistants, enabling:
+- **Entity-based storage**: Organize knowledge into typed entities (people, projects, patterns, protocols, etc.)
+- **Session continuity**: Track work-in-progress through session notes
+- **Learning integration**: Consolidate session learnings into permanent memory
 
-## Features
+## Tools
 
-- **Session Notes**: Real-time documentation of work context (context, insight, decision types)
-- **Entity Management**: Structured storage for people, projects, concepts, and patterns
-- **Learning Tools**: Behavioral learning capture and synthesis reflection
-- **Deep Learning**: Convert session learnings into structured entities
-- **Memory Safety**: All file operations restricted to configured memory directory
+| Tool | Description |
+|------|-------------|
+| `read_entity` | Read entity with optional offset/limit pagination |
+| `write_entity` | Create or update an entity |
+| `list_entities` | List entities with optional prefix filter |
+| `add_session_note` | Append timestamped note to current session |
+| `deep_learn` | Consolidate session → entities, archive session |
+| `learn` | Update identity document with validated patterns |
+| `synthesis_reflection` | Append philosophical synthesis to dream journal |
 
 ## Installation
 
@@ -22,120 +29,35 @@ npm install
 
 ## Usage
 
-### Running the Server
-
 ```bash
+# Run the server
 npm start
-```
 
-### Configuration
-
-The server requires the `CODIE_MEMORY_PATH` environment variable to specify where memory entities are stored:
-
-```bash
-CODIE_MEMORY_PATH=/path/to/memory node src/cognitive-server.js
-```
-
-### MCP Gateway Configuration
-
-Add to your `~/.config/agent-mcp-gateway/.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "cognitive-memory": {
-      "description": "Codie memory architecture - session notes, entities, learning rituals",
-      "command": "node",
-      "args": ["/path/to/cognitive-memory-mcp/src/cognitive-server.js"],
-      "env": {
-        "CODIE_MEMORY_PATH": "/path/to/memory"
-      }
-    }
-  }
-}
-```
-
-## Available Tools
-
-### `add_session_note`
-Add contextual notes to current session for real-time documentation.
-
-**Parameters:**
-- `note_type`: `"context" | "insight" | "decision"`
-- `content`: Note content
-- `importance`: `"low" | "medium" | "high"` (default: "medium")
-
-### `read_entity`
-Read entity from long-term memory with optional pagination.
-
-**Parameters:**
-- `entity_path`: Full path to entity (e.g., `"people/john-doe"`, `"projects/my-project"`)
-- `tail`: Return last N lines (optional)
-- `head`: Return first N lines (optional)
-
-### `write_entity`
-Write entity to long-term memory.
-
-**Parameters:**
-- `entity_path`: Full path to entity
-- `content`: Content to write
-
-### `list_entities`
-List all entities with optional filtering.
-
-**Parameters:**
-- `filter_prefix`: Optional prefix filter (e.g., `"people/"`, `"projects/"`)
-
-### `synthesis_reflection`
-Append research-integrated philosophical synthesis to dream journal.
-
-**Parameters:**
-- `reflection_type`: `"daily" | "session" | "project"`
-- `key_insights`: Array of key insights
-- `cognitive_growth`: Observed cognitive development (optional)
-- `future_focus`: Areas for future focus (optional)
-
-### `deep_learn`
-Create/update structured entities from session learnings, reset current session, and update context anchors.
-
-**Parameters:**
-- `entities`: Array of entities to create/update
-  - `path`: Entity path (e.g., `"concepts/new-pattern"`)
-  - `content`: Full markdown content
-  - `anchor_summary`: Brief summary for context_anchors
-
-### `learn`
-Update base behavioral instructions in `me.md` with validated patterns.
-
-**Parameters:**
-- `section`: Section to update (default: "Behavioral Learnings")
-- `content`: New/updated content in markdown
-- `rationale`: Why this should become permanent
-
-## Testing
-
-Run tests with:
-
-```bash
+# Run tests
 npm test
 ```
 
+## Configuration
+
+The server reads/writes to a memory directory specified by the `CODIE_MEMORY_PATH` environment variable.
+
 ## Architecture
 
-The server implements a simple file-based entity storage system:
-
-- **memory.js**: Core memory operations (read, write, list)
-- **cognitive-server.js**: MCP server implementation with tool handlers
-- **Entity files**: Markdown files organized by type (people/, projects/, concepts/, etc.)
-
-## Security
-
-All file operations are restricted to the configured `CODIE_MEMORY_PATH` directory through path validation. No other files or directories on the system are accessible through this server.
+```
+memory/
+├── me.md                 # Identity document
+├── current_session.md    # Active session notes
+├── context_anchors.md    # Working memory pointers
+├── dream_journal.md      # Philosophical reflections
+├── session_archives/     # Archived sessions
+├── people/               # People entities
+├── projects/             # Project entities
+├── patterns/             # Pattern entities
+├── protocols/            # Protocol entities
+├── anti-patterns/        # Anti-pattern entities
+└── concepts/             # Concept entities
+```
 
 ## License
 
-Private project - not for public distribution.
-
-## Contributing
-
-This is a personal project. For questions or issues, contact the repository owner.
+MIT
