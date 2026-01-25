@@ -39,7 +39,7 @@ npm test
 
 ## Configuration
 
-The server reads/writes to a memory directory specified by the `CODIE_MEMORY_PATH` environment variable.
+The server reads/writes to a memory directory specified by the `COGNITIVE_MEMORY_PATH` environment variable.
 
 ## Architecture
 

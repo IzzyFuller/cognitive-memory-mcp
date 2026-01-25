@@ -230,7 +230,7 @@ ${future_focus ? `## Future Development Focus\n${future_focus}\n` : ''}
 
     // Check if dream_journal.md needs rotation (~1MiB = 1048576 bytes)
     const ROTATION_THRESHOLD = 1048576;
-    const memoryDir = process.env.CODIE_MEMORY_PATH;
+    const memoryDir = process.env.COGNITIVE_MEMORY_PATH;
     const journalPath = resolve(join(memoryDir, 'dream_journal.md'));
 
     try {

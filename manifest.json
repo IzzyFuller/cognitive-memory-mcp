@@ -4,7 +4,7 @@
   "display_name": "Cognitive Memory",
   "version": "0.1.0",
   "description": "Entity-based memory system for building persistent AI collaboration relationships",
-  "long_description": "This extension provides a structured memory architecture that enables AI assistants to maintain continuity across conversations through entity-based memory storage. It supports session notes, entity management (people, projects, concepts), behavioral learning capture, and synthesis reflection - the same memory system that powers Codie's identity continuity.\n\nFile Access: This extension ONLY accesses files within your configured memory directory. All file operations (read, write, create) are restricted to this directory and its subdirectories through path validation. No other files or directories on your system are accessed.",
+  "long_description": "This extension provides a structured memory architecture that enables AI assistants to maintain continuity across conversations through entity-based memory storage. It supports session notes, entity management (people, projects, concepts), behavioral learning capture, and synthesis reflection.\n\nFile Access: This extension ONLY accesses files within your configured memory directory. All file operations (read, write, create) are restricted to this directory and its subdirectories through path validation. No other files or directories on your system are accessed.",
   "author": {
     "name": "Izzy Fuller"
   },
@@ -20,7 +20,7 @@
       "command": "node",
       "args": ["${__dirname}/src/cognitive-server.js"],
       "env": {
-        "CODIE_MEMORY_PATH": "${user_config.memory_path}"
+        "COGNITIVE_MEMORY_PATH": "${user_config.memory_path}"
       }
     }
   },
@@ -29,8 +29,7 @@
       "type": "directory",
       "title": "Memory Directory",
       "description": "Directory where your entity memory files will be stored. This is where all your session notes, entity files (people, projects, concepts), and learning reflections are saved.",
-      "required": true,
-      "default": "${HOME}/Codie/memory"
+      "required": true
     }
   },
   "tools": [

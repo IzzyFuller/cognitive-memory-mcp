@@ -1,3 +1,6 @@
+// Set env var before any imports
+process.env.COGNITIVE_MEMORY_PATH = './memory';
+
 export default {
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.js', '**/*.test.js'],

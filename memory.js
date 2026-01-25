@@ -6,10 +6,10 @@
 import { promises as fs } from 'fs';
 import { join, dirname, resolve } from 'path';
 
-const MEMORY_DIR = process.env.CODIE_MEMORY_PATH;
+const MEMORY_DIR = process.env.COGNITIVE_MEMORY_PATH;
 
 if (!MEMORY_DIR) {
-  throw new Error('CODIE_MEMORY_PATH environment variable is required but not set');
+  throw new Error('COGNITIVE_MEMORY_PATH environment variable is required but not set');
 }
 
 // Validate path stays within memory directory (prevent path traversal)
