@@ -11,8 +11,17 @@ export default {
   collectCoverageFrom: [
     '*.js',
     '!test.js',
-    '!jest.config.js'
+    '!jest.config.js',
+    '!eslint.config.js'
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html']
+  coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    global: {
+      branches: 60,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  }
 };
