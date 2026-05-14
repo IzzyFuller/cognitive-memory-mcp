@@ -4,7 +4,7 @@
  */
 
 import { promises as fs } from 'fs';
-import { join, dirname, resolve } from 'path';
+import { join, dirname, resolve, sep } from 'path';
 
 const MEMORY_DIR = process.env.COGNITIVE_MEMORY_PATH;
 
@@ -17,7 +17,7 @@ function validatePath(userPath) {
   const fullPath = resolve(join(MEMORY_DIR, userPath + '.md'));
   const normalizedMemoryDir = resolve(MEMORY_DIR);
 
-  if (!fullPath.startsWith(normalizedMemoryDir + '/') && fullPath !== normalizedMemoryDir) {
+  if (!fullPath.startsWith(normalizedMemoryDir + sep) && fullPath !== normalizedMemoryDir) {
     throw new Error(`Access denied: path '${userPath}' escapes memory directory`);
   }
 
@@ -43,7 +43,7 @@ export async function listMemory(dir = MEMORY_DIR, prefix = '') {
   const normalizedDir = resolve(dir);
   const normalizedMemoryDir = resolve(MEMORY_DIR);
 
-  if (!normalizedDir.startsWith(normalizedMemoryDir)) {
+  if (!normalizedDir.startsWith(normalizedMemoryDir + sep) && normalizedDir !== normalizedMemoryDir) {
     throw new Error('Access denied: directory escapes memory directory');
   }
 

@@ -152,3 +152,4 @@ js/
 *.tmp
 .DS_Store
 frontend-dev-423319-firebase-adminsdk-g7yrf-77b0a3a3cd.json
+/.claude/
