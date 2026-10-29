@@ -16,7 +16,7 @@
     "@types/jest": "^30.0.0",
     "eslint": "^10.3.0",
     "eslint-plugin-security": "^4.0.0",
-    "jest": "^30.3.0"
+    "jest": "^30.4.2"
   },
   "author": "Izzy Fuller",
   "license": "MIT"
