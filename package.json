@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "eslint": "^10.13.0",
-    "eslint-plugin-security": "^4.2.0",
+    "eslint-plugin-security": "^4.2.1",
     "jest": "^30.5.2"
   },
   "author": "Izzy Fuller",
